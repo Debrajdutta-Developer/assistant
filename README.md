@@ -2,6 +2,14 @@
 
 A mobile-friendly personal assistant prototype. It has an animated character, text chat, optional browser voice, a local personal notes store, a local Ollama model, and an optional OpenAI-compatible online router. Source is MIT licensed.
 
+## Project studio
+
+The original illustrated headset avatar is in `public/avatar.svg`. Astra's AI persona is warm, conversational, and sometimes humorous. Voice output uses a matching voice if the device provides one; a specific female voice or fully natural real-time speech cannot be guaranteed across browsers. Browser speech recognition may use a cloud service.
+
+In **Project studio**, paste a *public* GitHub `owner/repo` or URL to inspect its metadata, root files, and the presence of README/license/tests/CI. This is a read-only inspection, **not** a security audit or private-repository access. To create a Word document or PowerPoint file, type content into the studio or ask Astra to draft content in chat and press **Use last reply**, then choose the download format. These are basic editable OOXML files generated locally by Node without external packages. A PowerPoint uses the first line of each group of five lines as a slide heading and the following four as bullets; for precise decks, edit the downloaded file.
+
+Gmail, Drive, Calendar, and other Google apps are not connected. They require a Google Cloud OAuth client, consent screen, appropriate per-service scopes, and explicit account authorization. Do not enter a Google password or token into chat or notes. This app does not currently create apps automatically, change GitHub repositories, or control other devices' applications.
+
 ## Install on phone or desktop
 
 Astra now includes a Progressive Web App (PWA) manifest, icons, and an offline UI cache. On Android Chrome or desktop Chromium, open Astra from **HTTPS** or the **same device's** `http://localhost:3000`, then tap **Install app** or use the browser menu. On iPhone/iPad, use the Share menu and **Add to Home Screen**. Browser support varies. The service worker caches only public interface files, not API responses, chat messages, notes, or access tokens. The UI can open without the server, but AI chat still needs a running model/server or configured online router.
