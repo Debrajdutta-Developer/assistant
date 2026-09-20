@@ -26,6 +26,7 @@ try{
  r=await fetch('http://127.0.0.1:30487/manifest.webmanifest');assert.equal(r.status,200);const manifest=await r.json();assert.equal(manifest.display,'standalone');
  for(const icon of manifest.icons){r=await fetch('http://127.0.0.1:30487'+icon.src);assert.equal(r.status,200);assert.equal(r.headers.get('content-type'),'image/png');assert.equal((await r.arrayBuffer()).byteLength>100,true);}
  r=await fetch('http://127.0.0.1:30487/sw.js');assert.equal(r.status,200);assert.doesNotMatch(await r.text(),/SHELL = \[[^\]]*\/api\//);
+ r=await fetch('http://127.0.0.1:30487/avatar.svg');assert.equal(r.status,200);assert.match(await r.text(),/<svg/);
  assert.equal((await api('/api/notes','POST',{title:'school',content:'PRIVATE_TEST_NOTE'})).status,201);
  let chat={messages:[{role:'user',content:'hello'}],mode:'offline',shareNotes:false};
  assert.equal((await api('/api/chat','POST',chat)).data.source,'Offline: qwen3:0.6b');
@@ -34,5 +35,7 @@ try{
  assert.doesNotMatch(lastOnline.messages[0].content,/PRIVATE_TEST_NOTE/);
  chat.shareNotes=true;await api('/api/chat','POST',chat);assert.match(lastOnline.messages[0].content,/PRIVATE_TEST_NOTE/);
  assert.equal((await api('/api/models/pull','POST',{model:'random'})).status,400);
- console.log('Integration checks passed: PWA assets, token, local notes, online privacy, model restriction.');
+ assert.equal((await api('/api/repo/inspect','POST',{repository:'https://evil.example/a/b'})).status,400);
+ for(const type of ['docx','pptx']){r=await fetch('http://127.0.0.1:30487/api/export',{method:'POST',headers:{'content-type':'application/json','x-astra-token':'local-test-token'},body:JSON.stringify({type,title:'Test title',content:'First line\nSecond line'})});assert.equal(r.status,200);const bytes=new Uint8Array(await r.arrayBuffer());assert.deepEqual([...bytes.slice(0,2)],[80,75]);}
+ console.log('Integration checks passed: PWA assets, access, notes privacy, exports, repo URL validation.');
 }finally{app.kill();mock.close();localModel.close();await fs.rm(work,{recursive:true,force:true});}
