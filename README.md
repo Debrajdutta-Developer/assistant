@@ -2,6 +2,12 @@
 
 A mobile-friendly personal assistant prototype. It has an animated character, text chat, optional browser voice, a local personal notes store, a local Ollama model, and an optional OpenAI-compatible online router. Source is MIT licensed.
 
+## Install on phone or desktop
+
+Astra now includes a Progressive Web App (PWA) manifest, icons, and an offline UI cache. On Android Chrome or desktop Chromium, open Astra from **HTTPS** or the **same device's** `http://localhost:3000`, then tap **Install app** or use the browser menu. On iPhone/iPad, use the Share menu and **Add to Home Screen**. Browser support varies. The service worker caches only public interface files, not API responses, chat messages, notes, or access tokens. The UI can open without the server, but AI chat still needs a running model/server or configured online router.
+
+For your Android phone with Termux and Node.js, run Astra in Termux, open `http://localhost:3000` in Chrome on that phone, then install. This phone version can use the online router if configured. Installing the app icon does not install a local AI model or grant control over other apps.
+
 ## Run on a computer
 
 Install Node.js 20+ and [Ollama](https://ollama.com/download), then clone this repo and run `npm start`. Open http://localhost:3000. The UI has a **Download offline starter model** button; it downloads `qwen3:0.6b` (about 523 MB) through Ollama after you confirm. You can instead run `ollama pull qwen3:0.6b` yourself. Once downloaded, typed offline chat works without internet while Ollama and Astra run. Smaller local models can be less capable.
@@ -15,6 +21,8 @@ Personal notes live in `data/notes.json` on the host machine and are gitignored.
 Astra runs on the computer. A phone browser can reach its web UI if both devices can connect to the computer over a trusted local network. Set `HOST=0.0.0.0` and a strong `ASTRA_ACCESS_TOKEN` in the computer's private `.env`, start Astra, then open `http://COMPUTER-LAN-IP:3000` on the phone. Enter the token when prompted. This is local-network HTTP, so use only a trusted network and do not expose port 3000 to the internet. Remote access needs a separate HTTPS solution. The access token is kept only in page memory and will be requested again when reloaded.
 
 Speech recognition in a browser may use a cloud service even when the AI mode says offline. Use typed chat for guaranteed offline input. Browser speech voices also vary by device.
+
+Opening the computer's plain `http://COMPUTER-LAN-IP:3000` from another device works as a webpage but normally cannot be installed as a PWA or use the microphone. For installability across devices the server must be served over trusted HTTPS. Do not expose the HTTP server publicly.
 
 ## Scope
 
