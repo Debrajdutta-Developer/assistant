@@ -23,6 +23,9 @@ const api=async(route,method='GET',payload)=>{const r=await fetch('http://127.0.
 try{
  for(let i=0;i<30;i++){try{await api('/api/status');break;}catch{await new Promise(r=>setTimeout(r,100));}}
  let r=await fetch('http://127.0.0.1:30487/api/notes');assert.equal(r.status,401);
+ r=await fetch('http://127.0.0.1:30487/manifest.webmanifest');assert.equal(r.status,200);const manifest=await r.json();assert.equal(manifest.display,'standalone');
+ for(const icon of manifest.icons){r=await fetch('http://127.0.0.1:30487'+icon.src);assert.equal(r.status,200);assert.equal(r.headers.get('content-type'),'image/png');assert.equal((await r.arrayBuffer()).byteLength>100,true);}
+ r=await fetch('http://127.0.0.1:30487/sw.js');assert.equal(r.status,200);assert.doesNotMatch(await r.text(),/SHELL = \[[^\]]*\/api\//);
  assert.equal((await api('/api/notes','POST',{title:'school',content:'PRIVATE_TEST_NOTE'})).status,201);
  let chat={messages:[{role:'user',content:'hello'}],mode:'offline',shareNotes:false};
  assert.equal((await api('/api/chat','POST',chat)).data.source,'Offline: qwen3:0.6b');
@@ -31,5 +34,5 @@ try{
  assert.doesNotMatch(lastOnline.messages[0].content,/PRIVATE_TEST_NOTE/);
  chat.shareNotes=true;await api('/api/chat','POST',chat);assert.match(lastOnline.messages[0].content,/PRIVATE_TEST_NOTE/);
  assert.equal((await api('/api/models/pull','POST',{model:'random'})).status,400);
- console.log('Integration checks passed: token, local notes, online privacy, model restriction.');
+ console.log('Integration checks passed: PWA assets, token, local notes, online privacy, model restriction.');
 }finally{app.kill();mock.close();localModel.close();await fs.rm(work,{recursive:true,force:true});}
