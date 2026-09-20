@@ -10,7 +10,7 @@ const router=process.env.ROUTER_URL||'http://127.0.0.1:20128/v1';
 if(!(/^https:\/\/[^\s/?#]+(?::\d+)?\/v1$/.test(router)||/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\/v1$/.test(router)))throw Error('ROUTER_URL requires HTTPS or localhost /v1');
 if(!['127.0.0.1','localhost'].includes(host)&&!process.env.ASTRA_ACCESS_TOKEN)throw Error('Set ASTRA_ACCESS_TOKEN before allowing network clients.');
 const token=process.env.ASTRA_ACCESS_TOKEN;
-const send=(r,c,d,t='application/json')=>{r.writeHead(c,{'content-type':t,'cache-control':'no-store','x-content-type-options':'nosniff','content-security-policy':"default-src 'self'; style-src 'self'; script-src 'self'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; frame-ancestors 'none'"});r.end(typeof d==='string'?d:JSON.stringify(d));};
+const send=(r,c,d,t='application/json')=>{r.writeHead(c,{'content-type':t,'cache-control':'no-store','x-content-type-options':'nosniff','content-security-policy':"default-src 'self'; style-src 'self'; script-src 'self'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; frame-ancestors 'none'"});r.end(typeof d==='string'||Buffer.isBuffer(d)?d:JSON.stringify(d));};
 async function body(req){let s='';for await(const part of req){s+=part;if(s.length>32000)throw Error('Request too large');}return JSON.parse(s);}
 async function notes(){try{return JSON.parse(await fs.readFile(notesFile,'utf8'));}catch(e){if(e.code==='ENOENT')return [];throw e;}}
 async function save(list){await fs.mkdir(path.dirname(notesFile),{recursive:true,mode:0o700});await fs.writeFile(notesFile,JSON.stringify(list,null,2),{mode:0o600});}
@@ -38,5 +38,5 @@ http.createServer(async(req,res)=>{
   }catch(e){return send(res,400,{error:error(e)});}
  }
  if(req.method!=='GET')return send(res,405,'Method not allowed','text/plain');
- const files={'/':['index.html','text/html; charset=utf-8'],'/app.js':['app.js','text/javascript; charset=utf-8'],'/style.css':['style.css','text/css; charset=utf-8']};const f=files[url];if(!f)return send(res,404,'Not found','text/plain');try{return send(res,200,await fs.readFile(path.join(root,f[0]),'utf8'),f[1]);}catch{return send(res,500,'File unavailable','text/plain');}
+ const files={'/':['index.html','text/html; charset=utf-8'],'/app.js':['app.js','text/javascript; charset=utf-8'],'/style.css':['style.css','text/css; charset=utf-8'],'/manifest.webmanifest':['manifest.webmanifest','application/manifest+json'],'/sw.js':['sw.js','text/javascript; charset=utf-8'],'/icon-192.png':['icon-192.png','image/png'],'/icon-512.png':['icon-512.png','image/png']};const f=files[url];if(!f)return send(res,404,'Not found','text/plain');try{return send(res,200,await fs.readFile(path.join(root,f[0])),f[1]);}catch{return send(res,500,'File unavailable','text/plain');}
 }).listen(port,host,()=>console.log('Astra: http://'+host+':'+port));
