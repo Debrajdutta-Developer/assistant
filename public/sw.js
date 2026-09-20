@@ -1,6 +1,6 @@
 // Only the public app shell is cached. Never cache chat, notes, keys, or API responses.
-const CACHE = 'astra-shell-v1';
-const SHELL = ['/', '/app.js', '/style.css', '/manifest.webmanifest', '/icon-192.png', '/icon-512.png'];
+const CACHE = 'astra-shell-v2';
+const SHELL = ['/', '/app.js', '/style.css', '/avatar.svg', '/manifest.webmanifest', '/icon-192.png', '/icon-512.png'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));
 });
