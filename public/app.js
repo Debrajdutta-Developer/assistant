@@ -10,6 +10,43 @@ $('mic').onclick = () => { const SpeechRecognition = window.SpeechRecognition ||
 $('sound').onclick = () => { voiceOn = !voiceOn; if (!voiceOn) speechSynthesis.cancel(); $('sound').textContent = voiceOn ? '🔊 Voice on' : '🔇 Voice off'; activity('Ready to talk'); };
 $('clear').onclick = () => { messages.length = 0; speechSynthesis.cancel(); $('chat').replaceChildren(); bubble('Chat cleared. What would you like to ask?', 'assistant'); activity('Ready to talk'); };
 
+async function renderPermissions() {
+  const host = $('permissionList');
+  if (!host) return;
+  try {
+    const res = await api('/api/permissions');
+    const data = await res.json();
+    if (!res.ok) throw Error(data.error || 'Could not load permissions.');
+    host.replaceChildren();
+    for (const [name, meta] of Object.entries(data.capabilities)) {
+      const row = document.createElement('div');
+      row.className = 'permission-row';
+      const text = document.createElement('div');
+      const title = document.createElement('strong');
+      title.textContent = meta.label;
+      const desc = document.createElement('small');
+      desc.textContent = meta.description;
+      text.append(title, desc);
+      const action = document.createElement('button');
+      const enabled = Boolean(data.permissions[name]);
+      action.textContent = enabled ? 'Enabled' : (meta.oauth ? 'Connect' : 'Off');
+      action.className = enabled ? 'permission-on' : '';
+      action.disabled = Boolean(meta.oauth) && !data.connectors[meta.oauth];
+      if (meta.oauth && !data.connectors[meta.oauth]) action.title = 'Configure this OAuth connector on the Astra server first.';
+      action.onclick = async () => {
+        const next = !Boolean(data.permissions[name]);
+        const r = await api('/api/permissions', {method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({name,enabled:next})});
+        if (!r.ok) { const e=await r.json(); alert(e.error || 'Permission change failed.'); return; }
+        await renderPermissions();
+      };
+      row.append(text, action);
+      host.append(row);
+    }
+  } catch (e) {
+    host.textContent = e.message;
+  }
+}
+renderPermissions();
 async function renderNotes() { const res=await api('/api/notes'); if(!res.ok)return; const {notes}=await res.json(); $('noteList').replaceChildren(); for(const note of notes){const row=document.createElement('div');row.className='note';const title=document.createElement('strong');title.textContent=note.title;const content=document.createElement('p');content.textContent=note.content;const del=document.createElement('button');del.textContent='Delete';del.onclick=async()=>{if(!confirm('Delete this note?'))return;await api('/api/notes/delete',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id:note.id})});await renderNotes();};row.append(title,content,del);$('noteList').append(row);}}
 $('noteForm').onsubmit=async e=>{e.preventDefault();const res=await api('/api/notes',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({title:$('noteTitle').value,content:$('noteContent').value})});if(!res.ok){alert((await res.json()).error);return;}$('noteForm').reset();await renderNotes();};
 $('download').onclick=async()=>{if(!confirm('Download qwen3:0.6b to this computer through Ollama? This uses internet and disk space.'))return;$('download').disabled=true;$('models').textContent='Downloading… this can take several minutes';try{const res=await api('/api/models/pull',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({model:'qwen3:0.6b'})});const data=await res.json();if(!res.ok)throw Error(data.error);await connect();}catch(e){$('models').textContent=e.message;}finally{$('download').disabled=false;}};
