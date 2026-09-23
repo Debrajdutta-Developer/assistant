@@ -1,5 +1,69 @@
-<!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#080d1b"><link rel="manifest" href="/manifest.webmanifest"><link rel="icon" href="/icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><title>Astra · Personal Assistant</title><link rel="stylesheet" href="/style.css"></head><body><main class="shell"><header><div class="brand"><span class="mark">✦</span><div><b>ASTRA</b><small>PERSONAL ASSISTANT</small></div></div><div class="header-actions"><button type="button" id="install" hidden>Install app</button><span class="pill" id="status">Connecting…</span></div></header><section class="stage"><div class="halo"><div class="portrait" id="portrait"><img src="/avatar.svg" alt="Astra avatar wearing a headset"></div></div><div class="live"><span class="dot"></span><span id="activity">Ready to talk</span></div><h1>Your ideas, spoken aloud.</h1><p class="subtitle">Ask a question by voice or text. Astra responds in your language.</p></section><section class="controls"><label>Mode <select id="mode"><option value="auto">Auto (offline first)</option><option value="offline">Offline only</option><option value="online">Online router</option></select></label><label class="check"><input type="checkbox" id="shareNotes"> Share notes with online model</label><button type="button" id="download">Download offline starter model</button><span id="models">Checking local models…</span></section><details class="permissions">
-<summary>🔐 Assistant permissions & connections</summary>
-<div class="permission-intro">Astra can only use a capability when it is enabled here. External accounts still require their own OAuth authorization.</div>
-<div id="permissionList" class="permission-list">Loading permissions…</div>
-</details><details class="memory"><summary>Personal notes on this computer</summary><form id="noteForm"><input id="noteTitle" maxlength="100" placeholder="Title" required><textarea id="noteContent" maxlength="4000" placeholder="Your note. Avoid passwords and OTPs." required></textarea><button type="submit">Save note</button></form><div id="noteList"></div></details><details class="studio"><summary>Project studio · GitHub, Word, PowerPoint</summary><div class="studio-grid"><form id="repoForm"><h2>Inspect public GitHub repo</h2><input id="repoUrl" placeholder="owner/repo or GitHub URL" required><button>Inspect repo</button><div id="repoResult" aria-live="polite"></div></form><form id="exportForm"><h2>Make a document</h2><input id="exportTitle" maxlength="120" placeholder="Title" required><textarea id="exportBody" maxlength="16000" placeholder="Type content or use the last assistant reply" required></textarea><div class="export-actions"><button type="button" id="useReply">Use last reply</button><button type="submit" data-type="docx">Download Word</button><button type="submit" data-type="pptx">Download PowerPoint</button></div></form></div></details><section class="chat" id="chat" aria-live="polite"><div class="bubble assistant">হ্যালো! আমি Astra। প্রশ্ন লিখতে বা mic চেপে বলতে পারো।</div></section><form id="form"><button type="button" id="mic" title="Speak" aria-label="Speak">🎙</button><input id="input" autocomplete="off" placeholder="Ask me anything…" maxlength="4000" required><button class="send" type="submit" aria-label="Send">➤</button></form><footer><button id="sound" type="button">🔊 Voice on</button><button id="clear" type="button">Clear chat</button><span>Voice recognition depends on your browser.</span></footer></main><script src="/app.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>JARVIS · AI Assistant</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/icon-192.png">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<main class="jarvis-shell">
+  <header class="topbar">
+    <div class="identity"><span class="identity-mark">J</span><div><strong>JARVIS</strong><small>PERSONAL AI</small></div></div>
+    <div class="top-actions"><span class="status-dot" id="statusDot"></span><span id="status">Ready</span><button id="install" hidden>Install</button></div>
+  </header>
+
+  <section class="welcome-stage">
+    <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
+    <div class="core-wrap" id="portrait" aria-label="Jarvis AI core">
+      <div class="core-ring ring-a"></div><div class="core-ring ring-b"></div>
+      <div class="core"><span class="core-symbol">J</span><span class="core-scan"></span></div>
+    </div>
+    <div class="live-line"><span class="live-pulse"></span><span id="activity">ONLINE · READY TO ASSIST</span></div>
+    <h1>Hi, I'm <span>Jarvis.</span></h1>
+    <p class="hero-copy">Your AI assistant.<br>What do you want to do today?</p>
+    <p class="hero-sub">Build something, solve something, or chat about anything you want.</p>
+  </section>
+
+  <section class="quick-actions" aria-label="Quick actions">
+    <button type="button" class="quick" data-prompt="Help me build something new"><span>✦</span><b>Build something</b><small>Create with me</small></button>
+    <button type="button" class="quick" data-prompt="Let's just chat"><span>◌</span><b>Let's chat</b><small>Ask me anything</small></button>
+    <button type="button" class="quick" data-prompt="Help me understand something"><span>⌁</span><b>Explore an idea</b><small>Think it through</small></button>
+  </section>
+
+  <section class="conversation" id="chat" aria-live="polite"></section>
+
+  <form id="form" class="command-bar">
+    <button type="button" id="mic" title="Talk to Jarvis" aria-label="Talk to Jarvis">⌕</button>
+    <input id="input" autocomplete="off" placeholder="Ask Jarvis anything…" maxlength="4000" required>
+    <button class="send" type="submit" aria-label="Send">↑</button>
+  </form>
+
+  <footer class="bottom-bar">
+    <div><button id="sound" type="button">◉ Voice on</button><button id="clear" type="button">Clear</button></div>
+    <button type="button" class="advanced-toggle" onclick="document.getElementById('advanced').showModal()">⌘ Advanced</button>
+  </footer>
+
+  <dialog id="advanced" class="advanced-dialog">
+    <button class="dialog-close" onclick="this.closest('dialog').close()">×</button>
+    <h2>Jarvis Control Center</h2>
+    <p>Connections, memory, models and project tools.</p>
+    <details class="permissions"><summary>🔐 Permissions & connections</summary><div class="permission-intro">Jarvis only uses a capability when it is enabled. External accounts still require OAuth authorization.</div><div id="permissionList" class="permission-list">Loading permissions…</div></details>
+    <details class="controls"><summary>⚙ Model</summary><div class="control-inner"><label>Mode <select id="mode"><option value="auto">Auto</option><option value="offline">Offline only</option><option value="online">Online router</option></select></label><label class="check"><input type="checkbox" id="shareNotes"> Share notes with online model</label><button type="button" id="download">Download offline starter model</button><span id="models">Checking local models…</span></div></details>
+    <details class="memory"><summary>Personal memory</summary><form id="noteForm"><input id="noteTitle" maxlength="100" placeholder="Title" required><textarea id="noteContent" maxlength="4000" placeholder="Your note. Avoid passwords and OTPs." required></textarea><button type="submit">Save note</button></form><div id="noteList"></div></details>
+    <details class="studio"><summary>Project studio · GitHub · Word · PowerPoint</summary><div class="studio-grid"><form id="repoForm"><h2>Inspect public GitHub repo</h2><input id="repoUrl" placeholder="owner/repo or GitHub URL" required><button>Inspect repo</button><div id="repoResult"></div></form><form id="exportForm"><h2>Make a document</h2><input id="exportTitle" maxlength="120" placeholder="Title" required><textarea id="exportBody" maxlength="16000" placeholder="Type content or use the last assistant reply" required></textarea><div class="export-actions"><button type="button" id="useReply">Use last reply</button><button type="submit" data-type="docx">Word</button><button type="submit" data-type="pptx">PowerPoint</button></div></form></div></details>
+  </dialog>
+</main>
+<script src="/app.js"></script>
+<script>
+for (const button of document.querySelectorAll('.quick')) button.addEventListener('click',()=>{const input=document.getElementById('input');input.value=button.dataset.prompt;document.getElementById('form').requestSubmit();});
+const input=document.getElementById('input');
+input.addEventListener('focus',()=>document.body.classList.add('focused'));input.addEventListener('blur',()=>document.body.classList.remove('focused'));
+</script>
+</body>
+</html>
