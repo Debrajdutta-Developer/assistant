@@ -2,11 +2,11 @@
 set -u
 
 # Jarvis Android bridge for Termux. Run this on the same Android phone as the Jarvis server.
-# It intentionally uses Android's normal intents. It does NOT bypass the lock screen,
-# accessibility protections, or Android permission prompts.
+# It intentionally uses Android's normal intents and Termux:API. It does NOT bypass the
+# lock screen, accessibility protections, authentication, or Android permission prompts.
 
 usage() {
-  echo "Usage: $0 open-app <name> | open-url <url> | dial <number> | notify <title> <text>"
+  echo "Usage: $0 open-app <name> | open-url <url> | dial <number> | notify <title> <text> | battery | flashlight <on|off>"
   exit 2
 }
 
@@ -33,6 +33,14 @@ case "${1:-}" in
   notify)
     command -v termux-notification >/dev/null 2>&1 || { echo "Install Termux:API and the termux-api package first."; exit 1; }
     termux-notification --title "${2:-Jarvis}" --content "${3:-Jarvis notification}" >/dev/null
+    ;;
+  battery)
+    command -v termux-battery-status >/dev/null 2>&1 || { echo "Install Termux:API and the termux-api package first."; exit 1; }
+    termux-battery-status
+    ;;
+  flashlight)
+    command -v termux-torch >/dev/null 2>&1 || { echo "Install Termux:API and the termux-api package first."; exit 1; }
+    case "${2:-}" in on|off) termux-torch "$2" ;; *) echo "Use flashlight on or off."; exit 2 ;; esac
     ;;
   *) usage ;;
 esac
