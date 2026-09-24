@@ -72,6 +72,7 @@
   </dialog>
 </main>
 <script src="/app.js"></script>
+<script src="/device-commands.js"></script>
 <script>
 for (const button of document.querySelectorAll('.quick')) button.addEventListener('click',()=>{const input=document.getElementById('input');input.value=button.dataset.prompt;document.getElementById('form').requestSubmit();});
 const input=document.getElementById('input');
