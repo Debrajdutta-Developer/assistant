@@ -13,13 +13,14 @@ usage() {
 case "${1:-}" in
   open-app)
     case "${2:-}" in
-      whatsapp) am start -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -n com.whatsapp/.Main >/dev/null ;;
-      youtube) am start -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -n com.google.android.youtube/.app.honeycomb.Shell$HomeActivity >/dev/null ;;
-      chrome) am start -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -n com.android.chrome/com.google.android.apps.chrome.Main >/dev/null ;;
-      maps) am start -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -n com.google.android.apps.maps/com.google.android.maps.MapsActivity >/dev/null ;;
-      settings) am start -a android.settings.SETTINGS >/dev/null ;;
+      whatsapp) pkg=com.whatsapp ;;
+      youtube) pkg=com.google.android.youtube ;;
+      chrome) pkg=com.android.chrome ;;
+      maps) pkg=com.google.android.apps.maps ;;
+      settings) am start -a android.settings.SETTINGS >/dev/null; exit $? ;;
       *) echo "App is not allowlisted: ${2:-}"; exit 1 ;;
     esac
+    monkey -p "$pkg" -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1
     ;;
   open-url)
     [[ "${2:-}" =~ ^https:// ]] || { echo "Only HTTPS URLs are allowed."; exit 1; }
