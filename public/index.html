@@ -27,7 +27,7 @@
     <div class="live-line"><span class="live-pulse"></span><span id="activity">ONLINE · READY TO ASSIST</span></div>
     <h1>Hi, I'm <span>Jarvis.</span></h1>
     <p class="hero-copy">Your AI assistant.<br>What do you want to do today?</p>
-    <p class="hero-sub">Build something, solve something, or chat about anything you want.</p>
+    <p class="hero-sub">Talk naturally. Build things, open apps, find information, control connected tools, or just chat.</p>
   </section>
 
   <section class="quick-actions" aria-label="Quick actions">
@@ -52,7 +52,19 @@
   <dialog id="advanced" class="advanced-dialog">
     <button class="dialog-close" onclick="this.closest('dialog').close()">×</button>
     <h2>Jarvis Control Center</h2>
-    <p>Connections, memory, models and project tools.</p>
+    <p>Connections, memory, device actions, models and project tools.</p>
+    <details class="device-tools" open><summary>📱 Android device</summary>
+      <p class="device-note">These actions use normal Android intents through the local Termux bridge. Jarvis cannot bypass your lock screen or Android permission prompts.</p>
+      <div class="device-grid">
+        <button type="button" data-device-app="whatsapp">Open WhatsApp</button>
+        <button type="button" data-device-app="youtube">Open YouTube</button>
+        <button type="button" data-device-app="chrome">Open Chrome</button>
+        <button type="button" data-device-app="maps">Open Maps</button>
+        <button type="button" data-device-app="settings">Open Settings</button>
+      </div>
+      <form id="dialForm" class="device-form"><input id="dialNumber" inputmode="tel" placeholder="Phone number"><button type="submit">Open dialer</button></form>
+      <form id="urlForm" class="device-form"><input id="deviceUrl" inputmode="url" placeholder="https://example.com"><button type="submit">Open link</button></form>
+    </details>
     <details class="permissions"><summary>🔐 Permissions & connections</summary><div class="permission-intro">Jarvis only uses a capability when it is enabled. External accounts still require OAuth authorization.</div><div id="permissionList" class="permission-list">Loading permissions…</div></details>
     <details class="controls"><summary>⚙ Model</summary><div class="control-inner"><label>Mode <select id="mode"><option value="auto">Auto</option><option value="offline">Offline only</option><option value="online">Online router</option></select></label><label class="check"><input type="checkbox" id="shareNotes"> Share notes with online model</label><button type="button" id="download">Download offline starter model</button><span id="models">Checking local models…</span></div></details>
     <details class="memory"><summary>Personal memory</summary><form id="noteForm"><input id="noteTitle" maxlength="100" placeholder="Title" required><textarea id="noteContent" maxlength="4000" placeholder="Your note. Avoid passwords and OTPs." required></textarea><button type="submit">Save note</button></form><div id="noteList"></div></details>
