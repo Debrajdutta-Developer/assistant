@@ -28,9 +28,7 @@ http.createServer(async(req,res)=>{
  if(url?.startsWith('/api/')){
   if(token){const supplied=req.headers['x-astra-token'];if(typeof supplied!=='string'||Buffer.byteLength(supplied)!==Buffer.byteLength(token)||!crypto.timingSafeEqual(Buffer.from(supplied),Buffer.from(token)))return send(res,401,{error:'Enter this computer’s Astra access token.'});}
   try{
-   if(url==='/api/permissions'&&req.method==='GET'){
-    return send(res,200,{capabilities:CAPABILITIES,permissions:await readPermissions(),connectors:{github:!!process.env.GITHUB_CLIENT_ID,google:!!process.env.GOOGLE_CLIENT_ID}});
-   }
+   if(url==='/api/permissions'&&req.method==='GET')return send(res,200,{capabilities:CAPABILITIES,permissions:await readPermissions(),connectors:{github:!!process.env.GITHUB_CLIENT_ID,google:!!process.env.GOOGLE_CLIENT_ID}});
    if(url==='/api/permissions'&&req.method==='POST'){const {name,enabled}=await body(req);const permissions=await setPermission(name,enabled);return send(res,200,{permissions});}
    if(url==='/api/status'&&req.method==='GET'){let models=[];try{models=(await ollama('tags')).models?.map(m=>m.name)||[];}catch{}return send(res,200,{models,onlineConfigured:!!process.env.ROUTER_API_KEY,deviceBridge:await fs.access(bridge).then(()=>true).catch(()=>false)});}
    if(url==='/api/device/open-app'&&req.method==='POST'){
@@ -53,6 +51,15 @@ http.createServer(async(req,res)=>{
     const {title,text}=await body(req);if(typeof title!=='string'||typeof text!=='string'||!title.trim()||!text.trim()||title.length>100||text.length>1000)return send(res,400,{error:'Invalid notification.'});
     await bridgeRun(['notify',title,text]);return send(res,200,{ok:true,action:'notify'});
    }
+   if(url==='/api/device/battery'&&req.method==='GET'){
+    requirePermission(await readPermissions(),'device_battery');
+    const result=await bridgeRun(['battery']);return send(res,200,result);
+   }
+   if(url==='/api/device/flashlight'&&req.method==='POST'){
+    requirePermission(await readPermissions(),'device_flashlight');
+    const {on}=await body(req);if(typeof on!=='boolean')return send(res,400,{error:'on must be boolean'});
+    await bridgeRun(['flashlight',on?'on':'off']);return send(res,200,{ok:true,action:'flashlight',on});
+   }
    if(url==='/api/notes'&&req.method==='GET'){requirePermission(await readPermissions(),'memory');return send(res,200,{notes:await notes()});}
    if(url==='/api/notes'&&req.method==='POST'){requirePermission(await readPermissions(),'memory');const {title,content}=await body(req);if(typeof title!=='string'||typeof content!=='string'||!title.trim()||title.length>100||!content.trim()||content.length>4000)return send(res,400,{error:'Title 1–100 and content 1–4000 characters required.'});const list=await notes();if(list.length>=100)return send(res,400,{error:'100-note limit reached.'});list.push({id:crypto.randomUUID(),title:title.trim(),content:content.trim()});await save(list);return send(res,201,{notes:list});}
    if(url==='/api/notes/delete'&&req.method==='POST'){requirePermission(await readPermissions(),'memory');const {id}=await body(req);if(typeof id!=='string')return send(res,400,{error:'Invalid ID'});const list=await notes();if(!list.some(n=>n.id===id))return send(res,404,{error:'Note not found'});const updated=list.filter(n=>n.id!==id);await save(updated);return send(res,200,{notes:updated});}
@@ -61,7 +68,7 @@ http.createServer(async(req,res)=>{
     const {repository}=await body(req);if(typeof repository!=='string')return send(res,400,{error:'Enter a public GitHub repository.'});
     const cleaned=repository.trim().replace(/^https:\/\/github\.com\//i,'').replace(/\/$/,'').replace(/\.git$/,'');
     if(!/^[\w.-]{1,39}\/[\w.-]{1,100}$/.test(cleaned)||cleaned.includes('..'))return send(res,400,{error:'Use owner/repo or its github.com URL.'});
-    const base='https://api.github.com/repos/'+cleaned,headers={'accept':'application/vnd.github+json','user-agent':'Astra-Assistant'};
+    const base='https://api.github.com/repos/'+cleaned,headers={'accept':'application/vnd.github+json','user-agent':'Jarvis-Assistant'};
     const metaResponse=await fetch(base,{headers,signal:AbortSignal.timeout(12000)});if(!metaResponse.ok)return send(res,metaResponse.status===404?404:502,{error:metaResponse.status===404?'Public repository not found.':'GitHub unavailable or rate limited.'});
     const repo=await metaResponse.json();const listResponse=await fetch(base+'/contents',{headers,signal:AbortSignal.timeout(12000)});const files=listResponse.ok?(await listResponse.json()).map(x=>({name:x.name,type:x.type})).slice(0,100):[];const names=files.map(f=>f.name.toLowerCase());
     return send(res,200,{fullName:repo.full_name,url:repo.html_url,description:repo.description||'',language:repo.language||'Unknown',defaultBranch:repo.default_branch,updatedAt:repo.pushed_at,files,checks:{readme:names.some(n=>n.startsWith('readme')),license:names.some(n=>n.startsWith('license')),gitignore:names.includes('.gitignore'),tests:names.some(n=>['test','tests','__tests__'].includes(n)),ci:names.includes('.github')},note:'Root files and metadata only. Checks are presence checks, not a security audit.'});
