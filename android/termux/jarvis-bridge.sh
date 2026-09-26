@@ -27,7 +27,9 @@ case "${1:-}" in
     if command -v termux-open-url >/dev/null 2>&1; then termux-open-url "$2"; else am start -a android.intent.action.VIEW -d "$2" >/dev/null; fi
     ;;
   dial)
-    [[ "${2:-}" =~ ^[0-9+*#() -]{3,30}$ ]] || { echo "Invalid phone number."; exit 1; }
+    number="${2:-}"
+    number="${number// /}"
+    [[ "$number" =~ ^[0-9+*#()_-]{3,30}$ ]] || { echo "Invalid phone number."; exit 1; }
     am start -a android.intent.action.DIAL -d "tel:${2}" >/dev/null
     ;;
   notify)
