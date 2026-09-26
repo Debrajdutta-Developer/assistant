@@ -7,6 +7,7 @@ import {promisify} from 'node:util';
 import {makeDocx,makePptx} from './lib/office.mjs';
 import {CAPABILITIES,readPermissions,setPermission,requirePermission} from './lib/permissions.mjs';
 import {runtimeStatus,runtimeConfig,runtimeMessage,pullPreferredModel,chat as runtimeChat} from './lib/ai-runtime.mjs';
+import {routeCommand} from './lib/action-router.mjs';
 
 const execFileAsync=promisify(execFile);
 try { for (const line of (await fs.readFile('.env','utf8')).split('\n')) { const m=line.match(/^([A-Z_]+)=(.*)$/); if(m && !process.env[m[1]]) process.env[m[1]]=m[2].trim(); } } catch {}
@@ -33,6 +34,22 @@ http.createServer(async(req,res)=>{
    if(url==='/api/runtime'&&req.method==='GET'){const status=await runtimeStatus();return send(res,200,{...status,config:runtimeConfig(),message:runtimeMessage(status)});}
    if(url==='/api/runtime/pull'&&req.method==='POST'){const result=await pullPreferredModel();return send(res,200,{ok:true,status:result.status||'complete',message:'Offline starter model is ready.'});}
    if(url==='/api/status'&&req.method==='GET'){const runtime=await runtimeStatus();return send(res,200,{models:runtime.ollama.models,onlineConfigured:runtime.router.authentication==='configured',deviceBridge:await fs.access(bridge).then(()=>true).catch(()=>false),runtime:runtime.mode});}
+   if(url==='/api/assistant/command'&&req.method==='POST'){
+    const {text}=await body(req);if(typeof text!=='string'||text.length>1000)return send(res,400,{error:'Invalid command.'});
+    const command=routeCommand(text);if(!command.handled)return send(res,200,{handled:false});
+    const permissions=await readPermissions();
+    const permissionByAction={
+      'open-app':'device_open_apps','open-url':'device_open_urls','dial':'device_dial','notify':'device_notifications','battery':'device_battery','flashlight':'device_flashlight'
+    };
+    const permission=permissionByAction[command.action];if(permission)requirePermission(permissions,permission);
+    if(command.action==='open-app')await bridgeRun(['open-app',command.args.app]);
+    else if(command.action==='open-url')await bridgeRun(['open-url',command.args.url]);
+    else if(command.action==='dial')await bridgeRun(['dial',command.args.number]);
+    else if(command.action==='notify')await bridgeRun(['notify',command.args.title,command.args.text]);
+    else if(command.action==='flashlight')await bridgeRun(['flashlight',command.args.on?'on':'off']);
+    else if(command.action==='battery'){const result=await bridgeRun(['battery']);return send(res,200,{handled:true,reply:'Checking battery.',action:command.action,result});}
+    return send(res,200,{handled:true,reply:command.reply,action:command.action});
+   }
    if(url==='/api/device/open-app'&&req.method==='POST'){
     requirePermission(await readPermissions(),'device_open_apps');const {app}=await body(req);if(!['whatsapp','youtube','chrome','maps','settings'].includes(app))return send(res,400,{error:'App is not allowlisted.'});await bridgeRun(['open-app',app]);return send(res,200,{ok:true,action:'open-app',app});
    }
