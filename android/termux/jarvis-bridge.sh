@@ -23,14 +23,24 @@ case "${1:-}" in
     monkey -p "$pkg" -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1
     ;;
   open-url)
-    [[ "${2:-}" =~ ^https:// ]] || { echo "Only HTTPS URLs are allowed."; exit 1; }
-    if command -v termux-open-url >/dev/null 2>&1; then termux-open-url "$2"; else am start -a android.intent.action.VIEW -d "$2" >/dev/null; fi
+    url="${2:-}"
+    case "$url" in
+      https://*) : ;;
+      *) echo "Only HTTPS URLs are allowed."; exit 1 ;;
+    esac
+    if command -v termux-open-url >/dev/null 2>&1; then termux-open-url "$url"; else am start -a android.intent.action.VIEW -d "$url" >/dev/null; fi
     ;;
   dial)
     number="${2:-}"
-    number="${number// /}"
-    [[ "$number" =~ ^[0-9+*#()_-]{3,30}$ ]] || { echo "Invalid phone number."; exit 1; }
-    am start -a android.intent.action.DIAL -d "tel:${2}" >/dev/null
+    # Avoid Bash =~ entirely for maximum compatibility with Termux shells.
+    clean_number="$(printf '%s' "$number" | tr -d ' ')"
+    case "$clean_number" in
+      "") echo "Invalid phone number."; exit 1 ;;
+      *[!0-9+\*#\(\)_-]*) echo "Invalid phone number."; exit 1 ;;
+      *) : ;;
+    esac
+    if [ "${#clean_number}" -lt 3 ] || [ "${#clean_number}" -gt 30 ]; then echo "Invalid phone number."; exit 1; fi
+    am start -a android.intent.action.DIAL -d "tel:${clean_number}" >/dev/null
     ;;
   notify)
     command -v termux-notification >/dev/null 2>&1 || { echo "Install Termux:API and the termux-api package first."; exit 1; }
