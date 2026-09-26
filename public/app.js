@@ -7,15 +7,11 @@ async function connect() { let r = await api('/api/status'); if (r.status === 40
 function speak(text) { if (!voiceOn || !('speechSynthesis' in window)) return; speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = /[\u0980-\u09ff]/.test(text) ? 'bn-IN' : 'en-IN'; const voices = speechSynthesis.getVoices(); u.voice = voices.find(v => v.lang.startsWith(u.lang.slice(0,2)) && /female|woman/i.test(v.name)) || voices.find(v => v.lang.startsWith(u.lang.slice(0,2))) || null; u.onstart = () => activity('Speaking'); u.onend = () => activity('Ready to talk'); u.onerror = () => activity('Ready to talk'); speechSynthesis.speak(u); }
 async function deviceAction(url, payload) { const res = await api(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)}); const data=await res.json(); if(!res.ok) throw Error(data.error||'Device action failed.'); return data; }
 async function tryDeviceCommand(text) {
-  const normalized=text.trim().toLowerCase();
-  const apps={whatsapp:'whatsapp',youtube:'youtube','you tube':'youtube',chrome:'chrome',maps:'maps','google maps':'maps',settings:'settings'};
-  const openMatch=normalized.match(/^(?:open|launch|start)\s+(.+)$/);
-  if(openMatch){const app=apps[openMatch[1]];if(app){await deviceAction('/api/device/open-app',{app});return `Opening ${app}.`;}}
-  const urlMatch=normalized.match(/^(?:open|go to|visit)\s+(https:\/\/\S+)$/i);
-  if(urlMatch){await deviceAction('/api/device/open-url',{url:urlMatch[1]});return 'Opening that link.';}
-  const dialMatch=normalized.match(/^(?:dial|call)\s+([0-9+*#() -]{3,30})$/i);
-  if(dialMatch){await deviceAction('/api/device/dial',{number:dialMatch[1]});return 'Opening the phone dialer.';}
-  return null;
+  const res = await api('/api/assistant/command',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({text})});
+  const data = await res.json(); if(!res.ok) throw Error(data.error||'Device action failed.');
+  if(!data.handled) return null;
+  if(data.action==='battery' && data.result?.ok) return 'Battery status checked.';
+  return data.reply || 'Done.';
 }
 $('form').addEventListener('submit', async e => { e.preventDefault(); const content = $('input').value.trim(); if (!content) return; $('input').value = ''; bubble(content, 'user'); messages.push({role:'user',content}); activity('Working'); const pending = bubble('Working…','assistant'); $('form').querySelector('.send').disabled = true; try {
   const deviceReply=await tryDeviceCommand(content);
@@ -35,7 +31,7 @@ async function renderPermissions() {
 }
 renderPermissions();
 
-async function renderNotes() { const res=await api('/api/notes'); if(!res.ok)return; const {notes}=await res.json(); $('noteList').replaceChildren(); for(const note of notes){const row=document.createElement('div');row.className='note';const title=document.createElement('strong');title.textContent=note.title;const content=document.createElement('p');content.textContent=note.content;const del=document.createElement('button');del.textContent='Delete';del.onclick=async()=>{if(!confirm('Delete this note?'))return;await api('/api/notes/delete',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id:note.id})});await renderNotes();};row.append(title,content,del);$('noteList').append(row);}}
+async function renderNotes() { const res = await api('/api/notes'); if(!res.ok)return; const {notes}=await res.json(); $('noteList').replaceChildren(); for(const note of notes){const row=document.createElement('div');row.className='note';const title=document.createElement('strong');title.textContent=note.title;const content=document.createElement('p');content.textContent=note.content;const del=document.createElement('button');del.textContent='Delete';del.onclick=async()=>{if(!confirm('Delete this note?'))return;await api('/api/notes/delete',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id:note.id})});await renderNotes();};row.append(title,content,del);$('noteList').append(row);}}
 $('noteForm').onsubmit=async e=>{e.preventDefault();const res=await api('/api/notes',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({title:$('noteTitle').value,content:$('noteContent').value})});if(!res.ok){alert((await res.json()).error);return;}$('noteForm').reset();await renderNotes();};
 $('download').onclick=async()=>{if(!confirm('Download qwen3:0.6b to this computer through Ollama? This uses internet and disk space.'))return;$('download').disabled=true;$('models').textContent='Downloading… this can take several minutes';try{const res=await api('/api/models/pull',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({model:'qwen3:0.6b'})});const data=await res.json();if(!res.ok)throw Error(data.error);await connect();}catch(e){$('models').textContent=e.message;}finally{$('download').disabled=false;}};
 
