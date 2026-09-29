@@ -1,0 +1,28 @@
+{
+  "name": "Mayra",
+  "visual": {
+    "type": "human_editorial_female",
+    "hair": "dark wavy hair tied back with loose tendrils framing the face",
+    "wardrobe": "metallic silver trench coat",
+    "lighting": "purple and electric-blue dual-tone neon studio lighting",
+    "camera": "medium close-up with shallow depth of field",
+    "skin": "realistic editorial skin texture",
+    "expression": "direct, warm, expressive gaze with natural mouth movement"
+  },
+  "animation": {
+    "idle": ["blink", "subtle_breathing", "micro_head_motion", "eye_contact"],
+    "listening": ["eye_contact", "small_nods", "blink"],
+    "thinking": ["brief_gaze_shift", "subtle_head_tilt", "blink"],
+    "speaking": ["viseme_lipsync", "eye_contact", "natural_head_motion", "expression_from_mood"],
+    "interrupted": ["stop_speech", "return_to_listening"],
+    "offline": ["neutral_idle"]
+  },
+  "assetRequirements": {
+    "format": "VRM or compatible rigged GLB",
+    "faceBlendshapes": true,
+    "visemes": true,
+    "eyeBonesOrLookAt": true,
+    "licensedForRedistribution": false,
+    "note": "The repository does not bundle a third-party character. Put a properly licensed model at public/avatars/mayra.vrm or configure MAYRA_AVATAR_URL."
+  }
+}
