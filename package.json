@@ -6,6 +6,7 @@
   "scripts":{
     "start":"node server.js",
     "mayra":"node scripts/mayra-daemon.mjs",
+    "gemini:live":"node scripts/gemini-live-token.mjs",
     "nexus:sync":"bash scripts/sync-nexus.sh",
     "nexus:install":"cd nexus-ui && npm install",
     "nexus:dev":"cd nexus-ui && npm run dev",
