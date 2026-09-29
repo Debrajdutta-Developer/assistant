@@ -15,14 +15,42 @@ async function setState(patch) {
   await writeFile(stateFile, JSON.stringify({ ...current, ...patch, updatedAt: Date.now() }), { mode: 0o600 });
 }
 
-function transcribe() {
+function run(command, args = []) {
   return new Promise((resolve) => {
-    const child = spawn('termux-speech-to-text', [], { stdio: ['ignore', 'pipe', 'ignore'] });
+    const child = spawn(command, args, { stdio: ['ignore', 'pipe', 'ignore'] });
     let out = '';
     child.stdout.on('data', d => { out += d.toString(); });
     child.on('error', () => resolve(''));
-    child.on('close', () => resolve(out.trim().replace(/^"|"$/g, '')));
+    child.on('close', () => resolve(out.trim()));
   });
+}
+
+async function transcribe() {
+  return (await run('termux-speech-to-text')).replace(/^"|"$/g, '').trim();
+}
+
+async function answer(command) {
+  const fast = await fetch('http://127.0.0.1:3000/api/assistant/command', {
+    method: 'POST', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ text: command })
+  });
+  const fastData = await fast.json();
+  if (fastData.handled) return fastData.reply || 'Done.';
+
+  const chat = await fetch('http://127.0.0.1:3000/api/chat', {
+    method: 'POST', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      messages: [{ role: 'user', content: command }],
+      mode: 'auto', shareNotes: false
+    })
+  });
+  const data = await chat.json();
+  return data.reply || data.message || data.error || 'I am ready.';
+}
+
+async function speak(text) {
+  if (!text) return;
+  await run('termux-tts-speak', ['-l', 'en', '-r', '1.02', text.slice(0, 2500)]);
 }
 
 async function main() {
@@ -34,25 +62,26 @@ async function main() {
     const match = text.match(wake);
     if (!match) continue;
     const command = text.slice(match[0].length).trim();
-    await setState({ woken: true, transcript: command, response: '' });
+    await setState({ woken: true, status: 'Listening', transcript: command, response: '' });
+    if (!command) { await speak('Hi. I am Mayra. I am listening.'); }
     if (command) {
       try {
-        const response = await fetch('http://127.0.0.1:3000/api/assistant/command', {
-          method: 'POST', headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ text: command })
-        });
-        const data = await response.json();
-        await setState({ response: data.reply || data.error || 'Done.' });
-      } catch {
-        await setState({ response: 'I could not reach the Jarvis backend.' });
+        await setState({ status: 'Thinking' });
+        const response = await answer(command);
+        await setState({ status: 'Speaking', response });
+        await speak(response);
+      } catch (error) {
+        const response = String(error?.message || 'I could not reach the Jarvis runtime.');
+        await setState({ status: 'Error', response });
+        await speak(response);
       }
     }
     await sleep(500);
-    await setState({ woken: false, transcript: '' });
+    await setState({ status: 'Idle', woken: false, transcript: '' });
   }
 }
 
 main().catch(async (error) => {
-  await setState({ online: false, error: String(error?.message || error) });
+  await setState({ online: false, status: 'Offline', error: String(error?.message || error) });
   process.exit(1);
 });
