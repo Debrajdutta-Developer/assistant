@@ -10,9 +10,35 @@
     "nexus:sync":"bash scripts/sync-nexus.sh",
     "nexus:install":"cd nexus-ui && npm install",
     "nexus:dev":"cd nexus-ui && npm run dev",
-    "nexus:build":"cd nexus-ui && npm run build"
+    "nexus:build":"cd nexus-ui && npm run build",
+    "mayra:avatar":"node mayra-avatar/validate.mjs"
   },
   "engines":{"node":">=20"},
-  "dependencies":{"@google/genai":"^2.4.0","@mediapipe/tasks-vision":"^1.0.1","@react-spring/three":"^10.1.2","@react-three/drei":"^10.7.8","@react-three/fiber":"^9.7.0","@react-three/postprocessing":"^3.0.5","@react-three/rapier":"latest","@tailwindcss/vite":"^4.1.14","@types/three":"^0.185.4","@vitejs/plugin-react":"^5.0.4","clsx":"^2.1.1","dotenv":"^17.2.3","express":"^4.21.2","gsap":"^3.15.0","lucide-react":"^0.546.0","motion":"^12.23.24","postprocessing":"^6.39.4","react":"^19.0.1","react-dom":"^19.0.1","tailwind-merge":"^3.6.0","three":"^0.185.1","vite":"^6.2.3","zustand":"^5.0.14"},
+  "dependencies":{
+    "@google/genai":"^2.4.0",
+    "@mediapipe/tasks-vision":"^1.0.1",
+    "@met4citizen/talkinghead":"^1.7.0",
+    "@react-spring/three":"^10.1.2",
+    "@react-three/drei":"^10.7.8",
+    "@react-three/fiber":"^9.7.0",
+    "@react-three/postprocessing":"^3.0.5",
+    "@react-three/rapier":"latest",
+    "@tailwindcss/vite":"^4.1.14",
+    "@types/three":"^0.185.4",
+    "@vitejs/plugin-react":"^5.0.4",
+    "clsx":"^2.1.1",
+    "dotenv":"^17.2.3",
+    "express":"^4.21.2",
+    "gsap":"^3.15.0",
+    "lucide-react":"^0.546.0",
+    "motion":"^12.23.24",
+    "postprocessing":"^6.39.4",
+    "react":"^19.0.1",
+    "react-dom":"^19.0.1",
+    "tailwind-merge":"^3.6.0",
+    "three":"^0.185.1",
+    "vite":"^6.2.3",
+    "zustand":"^5.0.14"
+  },
   "devDependencies":{"@types/express":"^4.17.21","@types/node":"^22.14.0","autoprefixer":"^10.4.21","esbuild":"^0.25.0","tailwindcss":"^4.1.0","tsx":"^4.21.0","typescript":"~5.8.2"}
 }
