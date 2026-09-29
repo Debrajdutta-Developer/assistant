@@ -1,12 +1,13 @@
+import 'dotenv/config';
 import http from 'node:http';
 import { GoogleGenAI } from '@google/genai';
 
 const port = Number(process.env.GEMINI_LIVE_PORT || 3040);
 const host = process.env.GEMINI_LIVE_HOST || '127.0.0.1';
-const apiKey = process.env.GEMINI_API_KEY;
+const apiKey = process.env.GEMINI_API_KEY?.trim();
 
 if (!apiKey) {
-  console.error('GEMINI_API_KEY is required.');
+  console.error('GEMINI_API_KEY is required. Put it in ~/assistant/.env as GEMINI_API_KEY=...');
   process.exit(1);
 }
 
