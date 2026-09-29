@@ -17,6 +17,7 @@ rm -rf "$ROOT/nexus-ui"
 mkdir -p "$ROOT/nexus-ui"
 cp -R "$NEXUS_DIR/." "$ROOT/nexus-ui/"
 rm -rf "$ROOT/nexus-ui/.git" "$ROOT/nexus-ui/node_modules" "$ROOT/nexus-ui/dist"
-printf '[NEXUS] Complete Nexus source is now the UI base at nexus-ui/.\n'
+"$ROOT/scripts/apply-nexus-overlay.sh"
+printf '[NEXUS] Nexus base + Mayra mobile overlay ready.\n'
 printf '[NEXUS] Install/build with: cd nexus-ui && npm install && npm run build\n'
 printf '[NEXUS] Development: npm run nexus:dev\n'
